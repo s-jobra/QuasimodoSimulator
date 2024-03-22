@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Initializes the submodules.
+# Initializes Quasimodo.
 
 # Exit on failure
 set -e
