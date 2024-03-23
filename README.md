@@ -6,7 +6,7 @@ Originally used as a parser for the [MEDUSA](https://github.com/s-jobra/MEDUSA) 
 Assumes all non-python prerequisites are installed as stated in Quasimodo's README.
 Then you can build the simulator with:
 ```
-./config-quasimodo
+./scripts/config-quasimodo
 make
 ```
 
