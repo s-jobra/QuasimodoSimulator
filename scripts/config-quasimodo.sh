@@ -10,7 +10,7 @@ git clone https://github.com/trishullab/Quasimodo.git
 cd Quasimodo/
 git submodule update --init
 
-wget https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.gz .
+wget https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.gz
 tar -xvf boost_1_81_0.tar.gz
 export BOOST_PATH="$(pwd)/boost_1_81_0"
 
