@@ -28,11 +28,13 @@ TIMEOUT="timeout 1h"   # for no timeout: ""
 # Output settings
 SEP=","
 NO_RUN="---"
-FAILED="Failed"
+ERROR="Error"
+TO="TO"
 
 #####################################################################################
 # Functions:
 
+# Runs a single circuit on the executable with the specified type. Saves the results in the given variables.
 sim_file() {
     local type="$1"
     local var_time_name="$2"
@@ -46,22 +48,28 @@ sim_file() {
     local time_cur
     local mem_cur
 
-    # MEDUSA SYMBOLIC
     if [[ $fail = false ]]; then
         for i in $(eval echo "{1..$REPS}"); do
             output=$($TIMEOUT $EXEC $run_opt $TYPE_OPT $type <$file /dev/null 2>/dev/null | grep -E 'Time=|Peak Memory Usage=')
-            time_cur=$(echo "$output" | grep -oP '(?<=Time=)[0-9.eE+-]+' | awk '{printf "%.4f", $1}')
-            mem_cur=$(echo "$output" | grep -oP '(?<=Peak Memory Usage=)[0-9]+' | awk '{printf "%.2f", $1 / 1024}')
-            if [[ -z $time_cur ]]; then
-                time_avg=$FAILED
-                mem_avg=$FAILED
+            if [[ $? -eq 124 ]]; then
+                time_avg=$TO
+                mem_avg=$TO
+                fail=true
+                break;
+            elif [[ -z $output ]]; then
+                time_avg=$ERROR
+                mem_avg=$ERROR
                 fail=true
                 break;
             else
+                time_cur=$(echo "$output" | grep -oP '(?<=Time=)[0-9.eE+-]+' | awk '{printf "%.4f", $1}')
+                mem_cur=$(echo "$output" | grep -oP '(?<=Peak Memory Usage=)[0-9]+' | awk '{printf "%.2f", $1 / 1024}')
+
                 time_sum=$(echo "scale=4; $time_sum + $time_cur" | bc)
                 mem_sum=$(echo "scale=2; $mem_sum + $mem_cur" | bc)
             fi
         done
+
         if [[ $fail = false ]]; then
             time_avg=$(echo "scale=4; $time_sum / $REPS.0" | bc)
             mem_avg=$(echo "scale=2; $mem_sum / $REPS.0" | bc)
