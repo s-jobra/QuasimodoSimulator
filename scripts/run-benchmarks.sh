@@ -88,7 +88,10 @@ sim_file() {
 run_benchmark_file() {
     local file=$1
 
-    benchmark_name=$(echo "$file" | cut -d'/' -f4-)
+    file_name=$(basename "$file")
+    dir_name=$(dirname "$file")
+    benchmark_name="${dir_name##*/}/$file_name"
+
     sim_file "CFLOBDD" "cflobdd_time_avg" "cflobdd_mem_avg" "cflobdd_fail"
     sim_file "BDD" "bdd_time_avg" "bdd_mem_avg" "bdd_fail"
     printf "%s$SEP%s$SEP%s$SEP%s$SEP%s\n" "${benchmark_name%.qasm}" "$cflobdd_time_avg" "$cflobdd_mem_avg" \
