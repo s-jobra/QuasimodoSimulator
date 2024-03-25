@@ -34,7 +34,7 @@ TO="TO"
 #####################################################################################
 # Functions:
 
-# Runs a single circuit on the executable with the specified type. Saves the results in the given variables.
+# Runs a single circuit with the QuasimodoSimulator with the specified backend type. Saves the results in the given variables.
 sim_file() {
     local type="$1"
     local var_time_name="$2"
@@ -50,23 +50,24 @@ sim_file() {
 
     if [[ $fail = false ]]; then
         for i in $(eval echo "{1..$REPS}"); do
-            output=$($TIMEOUT $EXEC $run_opt $TYPE_OPT $type <$file /dev/null 2>/dev/null | grep -E 'Time=|Peak Memory Usage=')
-            if [[ $? -eq 124 ]]; then
+            output=$($TIMEOUT $EXEC $run_opt $TYPE_OPT $type <$file 2>&1 | grep -vE "^ *'")
+            
+            if [[ -z $output ]]; then
                 time_avg=$TO
                 mem_avg=$TO
                 fail=true
                 break;
-            elif [[ -z $output ]]; then
-                time_avg=$ERROR
-                mem_avg=$ERROR
-                fail=true
-                break;
-            else
+            elif grep -q "Time" <<< "$output"; then
                 time_cur=$(echo "$output" | grep -oP '(?<=Time=)[0-9.eE+-]+' | awk '{printf "%.4f", $1}')
                 mem_cur=$(echo "$output" | grep -oP '(?<=Peak Memory Usage=)[0-9]+' | awk '{printf "%.2f", $1 / 1024}')
 
                 time_sum=$(echo "scale=4; $time_sum + $time_cur" | bc)
                 mem_sum=$(echo "scale=2; $mem_sum + $mem_cur" | bc)
+            else
+                time_avg=$ERROR
+                mem_avg=$ERROR
+                fail=true
+                break;
             fi
         done
 
@@ -120,7 +121,8 @@ run_benchmarks() {
         cflobdd_fail=false
         bdd_fail=false
 
-        for file in "$folder"[0-9]*.qasm; do
+        files=$(find "$folder" -maxdepth 1 -type f -name '*.qasm' | grep -vE "/NL_" | sort)
+        for file in $files; do
             # To avoid an invalid iteration when no file matches the criteria
             if [ -f "$file" ]; then
                 run_benchmark_file $file
@@ -139,10 +141,22 @@ run_benchmarks() {
     done
 }
 
+# Removes 'LP-' from benchmark names and correctly reorders the given csv file.
+format_csv() {
+    local file=$1
+    local tmp_file="tmp.csv"
+
+    sed -i '/^LP-/ s/^LP-//' "$file"
+    { head -n1 "$file"; tail -n+2 "$file" | sort -t, -k1,1; } > "$tmp_file"
+    mv "$tmp_file" "$file"
+}
+
 #####################################################################################
 # Output:
 is_measure=false # global so it can be read from all the functions
 run_benchmarks
+format_csv $FILE_OUT
 
 is_measure=true
 run_benchmarks
+format_csv $FILE_OUT_MEASURE
