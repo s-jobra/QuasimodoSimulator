@@ -9,8 +9,6 @@ set -e
 git clone https://github.com/trishullab/Quasimodo.git
 cd Quasimodo/
 git submodule update --init
-git checkout cflobdds_fmcad
-git pull origin cflobdds_fmcad
 
 wget https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.gz
 tar -xvf boost_1_81_0.tar.gz
