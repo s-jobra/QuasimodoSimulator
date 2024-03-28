@@ -16,7 +16,7 @@
  --info,     -i          measure the simulation runtime and peak memory usage\n\
  \n\
  Options with a required argument:\n\
- --type,     -t          specify the backend type: 'CFLOBDD','BDD','WBDD' (default 'CFLOBDD')\n\
+ --type,     -t          specify the backend type: 'CFLOBDD', 'WCFLOBDD','BDD','WBDD' (default 'CFLOBDD')\n\
  --file,     -f          specify the input QASM file (default STDIN)\n\
  --nsamples, -n          specify the number of samples used for measurement (default 1024)\n\
  \n\
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
                 break;
             case 't':
                 sim_type = optarg;
-                if (sim_type != "CFLOBDD" && sim_type != "BDD" && sim_type != "WBDD") {
+                if (sim_type != "CFLOBDD" && sim_type != "WCFLOBDD" && sim_type != "BDD" && sim_type != "WBDD") {
                     error_exit("Invalid simulation backend option '%s'.\n", optarg);
                 }
                 break;

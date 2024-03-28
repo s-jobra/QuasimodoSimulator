@@ -8,7 +8,7 @@ EXEC:=$(BIN_DIR)/QuasimodoSim
 OBJS:=$(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
 CXX:=g++
-CXXFLAGS:=-g -O2 -std=c++11
+CXXFLAGS:=-g -O2 -std=c++2a
 LDFLAGS:=-L$(QUASIMODO_DIR) -lquasimodo -Wl,-rpath=./$(QUASIMODO_DIR)
 INC_DIRS:=-I $(QUASIMODO_DIR)
 
