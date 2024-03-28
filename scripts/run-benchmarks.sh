@@ -94,9 +94,11 @@ run_benchmark_file() {
     benchmark_name="${dir_name##*/}/$file_name"
 
     sim_file "CFLOBDD" "cflobdd_time_avg" "cflobdd_mem_avg" "cflobdd_fail"
+    sim_file "WCFLOBDD" "wcflobdd_time_avg" "wcflobdd_mem_avg" "wcflobdd_fail"
     sim_file "BDD" "bdd_time_avg" "bdd_mem_avg" "bdd_fail"
-    printf "%s$SEP%s$SEP%s$SEP%s$SEP%s\n" "${benchmark_name%.qasm}" "$cflobdd_time_avg" "$cflobdd_mem_avg" \
-           "$bdd_time_avg" "$bdd_mem_avg" >> "$file_out"
+    sim_file "WBDD" "wbdd_time_avg" "wbdd_mem_avg" "wbdd_fail"
+    printf "%s$SEP%s$SEP%s$SEP%s$SEP%s$SEP%s$SEP%s$SEP%s$SEP%s\n" "${benchmark_name%.qasm}" "$cflobdd_time_avg" "$cflobdd_mem_avg" \
+           "$wcflobdd_time_avg" "$wcflobdd_mem_avg" "$bdd_time_avg" "$bdd_mem_avg" "$wbdd_time_avg" "$wbdd_mem_avg">> "$file_out"
 }
 
 run_benchmarks() {
@@ -111,15 +113,18 @@ run_benchmarks() {
         file_out=$FILE_OUT
     fi
 
-    printf "%s$SEP%s$SEP%s$SEP%s$SEP%s\n" "Circuit" "Quasimodo CFLOBDD t" "Quasimodo CFLOBDD mem" "Quasimodo BDD t" \
-           "Quasimodo BDD mem" >> "$file_out"
+    printf "%s$SEP%s$SEP%s$SEP%s$SEP%s$SEP%s$SEP%s$SEP%s$SEP%s\n" "Circuit" "Quasimodo CFLOBDD t" "Quasimodo CFLOBDD mem" \
+           "Quasimodo WCFLOBDD t" "Quasimodo WCFLOBDD mem" "Quasimodo BDD t" "Quasimodo BDD mem" "Quasimodo WBDD t" \
+           "Quasimodo WBDD mem" >> "$file_out"
 
     for folder in "$benchmarks_fd"*/; do
         folder_name=$(basename "$folder")
 
         # Initialize the flags for crashes and exceeding the timeout
         cflobdd_fail=false
+        wcflobdd_fail=false
         bdd_fail=false
+        wbdd_fail=false
 
         files=$(find "$folder" -maxdepth 1 -type f -name '*.qasm' | grep -vE "/NL_" | sort)
         for file in $files; do
@@ -131,10 +136,12 @@ run_benchmarks() {
             # Random, RevLib, Feynman - nonlinear progression in simulation time -> wait for TO on every benchmark (restart flags)
             if [[ ( "$folder_name" = "Random" ) || ( "$folder_name" = "RevLib" ) || ( "$folder_name" = "Feynman" ) ]]; then
                 cflobdd_fail=false
+                wcflobdd_fail=false
                 bdd_fail=false
+                wbdd_fail=false
             fi
 
-            if [[ ( $cflobdd_fail = true ) && ( $bdd_fail = true ) ]]; then
+            if [[ ( $cflobdd_fail = true ) && ( $wcflobdd_fail = true ) && ( $bdd_fail = true ) && ( $wbdd_fail = true ) ]]; then
                 break;
             fi
         done
