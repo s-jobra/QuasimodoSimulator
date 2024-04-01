@@ -294,6 +294,32 @@ void sim_file(FILE *in, QuantumCircuit *circ, int *n_qubits, int **bits_to_measu
                 uint32_t qt2 = get_q_num(in);
                 circ->ApplyCSwapGate(qc, qt1, qt2);
             }
+            else if (strcasecmp(cmd, "mcx") == 0) {
+                std::vector<long int> controllers;
+                // Read all control qubits and the target qubit (the last param)
+                while(true) {
+                    controllers.push_back(get_q_num(in));
+                    c = fgetc(in);
+                    while (isspace(c)) {
+                        c = fgetc(in);
+                    }
+
+                    if (c == ',') {
+                        continue; // additional qubit indices are present in the file
+                    }
+                    else if (c == ';') {
+                        break; // all qubit parameters loaded
+                    }
+                    else {
+                        error_exit("Invalid 'mcx' gate syntax.\n");
+                    }
+                }
+                uint32_t qt = controllers.back();
+                controllers.pop_back();
+
+                circ->ApplyMCXGate(controllers, qt);
+                continue; // ';' already encountered
+            }
             else {
                 error_exit("Invalid command '%s'.\n", cmd);
             }
